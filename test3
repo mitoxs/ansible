@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# Mettre à jour le système
+sudo apt update && sudo apt upgrade -y
+
+# Installer les dépendances essentielles
+sudo apt install -y python3 python3-pip python3-venv ansible curl git pipx podman
+
+# Assurer la configuration de pipx
+pipx ensurepath
+
+# Installer Ansible dans un environnement virtuel
+mkdir -p ~/venv
+python3 -m venv ~/venv/ansible_env
+source ~/venv/ansible_env/bin/activate
+pip install --upgrade pip
+pip install ansible
+
+# Vérifier l'installation
+ansible --version
+echo "Ansible est installé et configuré !"
+
+# Créer un utilisateur et générer des clés SSH
+USERNAME="nouvel_utilisateur"
+sudo adduser --gecos "" $USERNAME
+sudo passwd $USERNAME
+
+sudo mkdir -p /home/$USERNAME/.ssh
+sudo chown $USERNAME:$USERNAME /home/$USERNAME/.ssh
+sudo chmod 700 /home/$USERNAME/.ssh
+
+sudo -u $USERNAME ssh-keygen -t rsa -b 4096 -f /home/$USERNAME/.ssh/id_rsa -N ""
+echo "Clé publique générée :"
+cat /home/$USERNAME/.ssh/id_rsa.pub
+
+echo "L'utilisateur $USERNAME et ses clés SSH ont été créés avec succès !"
+
+# Installer AWX Operator
+pipx install ansible
+pipx install awxkit
+
+echo "AWX Operator est installé. Suis la documentation pour son déploiement : https://github.com/ansible/awx"
